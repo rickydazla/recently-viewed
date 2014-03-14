@@ -1,3 +1,5 @@
+/*global Shopify */
+
 /**
  * Cookie plugin
  *
@@ -103,20 +105,27 @@ jQuery.cookie=function(b,j,m){if(typeof j!="undefined"){m=m||{};if(j===null){j="
 
      showRecentlyViewed: function(params) {
 
-       var params = params || {};
+       params = params || {};
 
        // Update defaults.
        jQuery.extend(config, params);
 
        // Read cookie.
        productHandleQueue = cookie.read();
+
+       // Remove current page from list
+       var phq = productHandleQueue;
+       var productHandle = this.getProductHandle();
+       if (phq.indexOf(productHandle) > -1) {
+          phq.splice(phq.indexOf(productHandle), 1);
+       }
        
        // Template and element where to insert.
        template = jQuery('#' + config.templateId);
        wrapper = jQuery('#' + config.wrapperId);
        
        // How many products to show.
-       config.howManyToShow = Math.min(productHandleQueue.length, config.howManyToShow);
+       config.howManyToShow = Math.min(phq.length, config.howManyToShow);
 
        // If we have any to show.
        if (config.howManyToShow && template.length && wrapper.length) {
@@ -124,6 +133,10 @@ jQuery.cookie=function(b,j,m){if(typeof j!="undefined"){m=m||{};if(j===null){j="
          moveAlong();    
        }
 
+     },
+
+     getProductHandle: function() {
+       return window.location.pathname.match(/\/products\/([a-z0-9\-]+)/)[1];
      },
 
      getConfig: function() {
@@ -136,7 +149,7 @@ jQuery.cookie=function(b,j,m){if(typeof j!="undefined"){m=m||{};if(j===null){j="
      
      recordRecentlyViewed: function(params) {
 
-       var params = params || {};
+       params = params || {};
 
        // Update defaults.
        jQuery.extend(config, params);
@@ -148,7 +161,7 @@ jQuery.cookie=function(b,j,m){if(typeof j!="undefined"){m=m||{};if(j===null){j="
        if (window.location.pathname.indexOf('/products/') !== -1) {
 
          // What is the product handle on this page.
-         var productHandle = window.location.pathname.match(/\/products\/([a-z0-9\-]+)/)[1];
+         var productHandle = this.getProductHandle();
          // In what position is that product in memory.
          var position = jQuery.inArray(productHandle, recentlyViewed);
          // If not in memory.
